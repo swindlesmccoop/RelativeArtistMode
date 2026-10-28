@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <AssemblyName>RelativeArtist</AssemblyName>
+    <RootNamespace>RelativeArtist</RootNamespace>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <!-- Four-part like OTD's plugin repository expects; releases override it with the tag. -->
+    <Version>0.0.0.0</Version>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Provided by the OpenTabletDriver daemon at runtime; don't ship it. -->
+    <PackageReference Include="OpenTabletDriver.Plugin" Version="0.6.7" ExcludeAssets="runtime" PrivateAssets="all" />
+    <!-- Shipped next to the plugin for the screen cast portal. -->
+    <PackageReference Include="Tmds.DBus.Protocol" Version="0.95.1" />
+  </ItemGroup>
+
+</Project>
