@@ -1,0 +1,48 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Four-part version to release, e.g. 1.0.0.0
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ inputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          target: export
+          build-args: VERSION=${{ inputs.version }}
+          outputs: type=local,dest=out
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # OTD's plugin manager expects the DLLs at the top level of the zip.
+      - name: Package
+        run: |
+          zip -j "RelativeArtist-$VERSION.zip" out/*.dll
+          sha256sum "RelativeArtist-$VERSION.zip" | tee sha256.txt
+
+      - name: Create draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          {
+            echo "SHA256: \`$(cut -d' ' -f1 sha256.txt)\`"
+          } > notes.md
+          gh release create "$VERSION" "RelativeArtist-$VERSION.zip" \
+            --draft --target "$GITHUB_SHA" \
+            --title "Relative Artist Mode $VERSION" \
+            --notes-file notes.md
